@@ -33,4 +33,106 @@
   setTimeout(replaceReviews, 300);
   setTimeout(replaceReviews, 1200);
 })();
-</script></body></html>
+</script>
+<!-- A22 mobile menu fix -->
+<script id="a22-mobile-menu-fix">
+(function(){
+  if (window.__a22MobileMenuFixed) return;
+  window.__a22MobileMenuFixed = true;
+
+  var css = ''+
+  '.a22-mobile-menu-overlay{position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.45);opacity:0;pointer-events:none;transition:opacity .25s ease;}'+
+  '.a22-mobile-menu-overlay.is-open{opacity:1;pointer-events:auto;}'+
+  '.a22-mobile-menu-panel{position:fixed;top:0;right:0;z-index:9999;width:min(86vw,360px);height:100vh;background:#fff;box-shadow:-20px 0 60px rgba(15,23,42,.22);transform:translateX(105%);transition:transform .28s ease;display:flex;flex-direction:column;padding:22px 22px 28px;}'+
+  '.a22-mobile-menu-panel.is-open{transform:translateX(0);}'+
+  '.a22-mobile-menu-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;}'+
+  '.a22-mobile-menu-logo{height:52px;width:auto;object-fit:contain;}'+
+  '.a22-mobile-menu-close{width:42px;height:42px;border:0;border-radius:14px;background:#f1f5f9;color:#0f172a;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;}'+
+  '.a22-mobile-menu-nav{display:flex;flex-direction:column;gap:4px;border-top:1px solid rgba(15,23,42,.08);padding-top:14px;}'+
+  '.a22-mobile-menu-nav a{display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:#111827;font-size:18px;font-weight:500;padding:14px 4px;border-bottom:1px solid rgba(15,23,42,.07);}'+
+  '.a22-mobile-menu-actions{margin-top:auto;display:grid;gap:10px;padding-top:20px;}'+
+  '.a22-mobile-menu-phone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(91,33,182,.25);border-radius:18px;padding:13px 18px;color:#5B21B6;text-decoration:none;font-weight:600;}'+
+  '.a22-mobile-menu-book{display:flex;align-items:center;justify-content:center;border-radius:18px;padding:14px 18px;background:#5B21B6;color:#fff;text-decoration:none;font-weight:700;box-shadow:0 12px 28px rgba(91,33,182,.28);}'+
+  'body.a22-menu-lock{overflow:hidden;}@media (min-width:1024px){.a22-mobile-menu-overlay,.a22-mobile-menu-panel{display:none!important;}}';
+
+  function currentPrefix(){
+    var path = window.location.pathname || '';
+    // For local file pages and flat exported HTML structure, all links live next to current file.
+    return './';
+  }
+  function makeHref(file){ return currentPrefix() + file; }
+
+  function buildMenu(){
+    if (document.querySelector('.a22-mobile-menu-panel')) return;
+    var style = document.createElement('style');
+    style.id = 'a22-mobile-menu-style';
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    var overlay = document.createElement('div');
+    overlay.className = 'a22-mobile-menu-overlay';
+    overlay.setAttribute('data-a22-menu-close','');
+
+    var panel = document.createElement('aside');
+    panel.className = 'a22-mobile-menu-panel';
+    panel.setAttribute('role','dialog');
+    panel.setAttribute('aria-modal','true');
+    panel.setAttribute('aria-label','Мобільне меню');
+    panel.innerHTML = ''+
+      '<div class="a22-mobile-menu-head">'+
+        '<a href="'+makeHref('index.html')+'"><img class="a22-mobile-menu-logo" src="'+makeHref('images/logo-new-site.png')+'" alt="A22 Dental Clinic"></a>'+
+        '<button class="a22-mobile-menu-close" type="button" aria-label="Закрити меню" data-a22-menu-close>×</button>'+
+      '</div>'+
+      '<nav class="a22-mobile-menu-nav">'+
+        '<a href="'+makeHref('index.html')+'">Головна <span>›</span></a>'+
+        '<a href="'+makeHref('about.html')+'">Про клініку <span>›</span></a>'+
+        '<a href="'+makeHref('services.html')+'">Послуги <span>›</span></a>'+
+        '<a href="'+makeHref('doctors.html')+'">Лікарі <span>›</span></a>'+
+        '<a href="'+makeHref('implant.html')+'">Імплантація <span>›</span></a>'+
+        '<a href="'+makeHref('pricing.html')+'">Прайс <span>›</span></a>'+
+        '<a href="'+makeHref('reviews.html')+'">Відгуки <span>›</span></a>'+
+        '<a href="'+makeHref('contacts.html')+'">Контакти <span>›</span></a>'+
+      '</nav>'+
+      '<div class="a22-mobile-menu-actions">'+
+        '<a class="a22-mobile-menu-phone" href="tel:0800333022">0800-333-0-22</a>'+
+        '<a class="a22-mobile-menu-book" href="'+makeHref('contacts.html')+'#booking">Записатися</a>'+
+      '</div>';
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(panel);
+  }
+
+  function setOpen(open){
+    buildMenu();
+    var overlay = document.querySelector('.a22-mobile-menu-overlay');
+    var panel = document.querySelector('.a22-mobile-menu-panel');
+    var btn = document.querySelector('button[data-slot="sheet-trigger"],button[aria-haspopup="dialog"]');
+    if (!overlay || !panel) return;
+    overlay.classList.toggle('is-open', open);
+    panel.classList.toggle('is-open', open);
+    document.body.classList.toggle('a22-menu-lock', open);
+    if (btn) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('data-state', open ? 'open' : 'closed');
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    var trigger = e.target.closest && e.target.closest('button[data-slot="sheet-trigger"],button[aria-haspopup="dialog"]');
+    if (trigger && trigger.querySelector('.lucide-menu')) {
+      e.preventDefault();
+      setOpen(true);
+      return;
+    }
+    if (e.target.closest && e.target.closest('[data-a22-menu-close]')) {
+      e.preventDefault();
+      setOpen(false);
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') setOpen(false);
+  });
+})();
+</script>
+</body></html>
